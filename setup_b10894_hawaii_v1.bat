@@ -10,13 +10,13 @@ echo ============================================================
 echo.
 
 call :check_tool git || goto :fail
-call :check_tool python || goto :fail
+call :check_tool powershell || goto :fail
 call :check_tool cmake || goto :fail
 
 echo.
 echo [1/5] Tool versions
 git --version
-python --version
+powershell -NoProfile -Command "$PSVersionTable.PSVersion.ToString()"
 cmake --version | findstr /b /c:"cmake version"
 
 echo.
@@ -44,8 +44,8 @@ if errorlevel 1 (popd & goto :fail)
 popd
 
 echo.
-echo [4/5] Applying Hawaii V1 patch...
-python apply_hawaii_v1.py
+echo [4/5] Applying Hawaii V1 patch with PowerShell...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0apply_hawaii_v1.ps1"
 if errorlevel 1 goto :fail
 
 pushd llama.cpp
