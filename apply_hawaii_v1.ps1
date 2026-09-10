@@ -7,16 +7,15 @@ $Func = 'static vk_fa_tuning_params get_fa_tuning_params_scalar('
 $Patch = @'
 
     // HAWAII_V1_SHARED_MEMORY_FA
-    // AMD Hawaii / GCN2 + proprietary Vulkan driver can produce corrupted
-    // Flash Attention results when subgroup-based reductions are used.
-    // Keep the modern FA shader, but force its shared-memory reduction path.
+    // AMD Hawaii / GCN2 compatibility path for the proprietary Vulkan driver.
+    // Keep the modern scalar Flash Attention shader, but disable subgroup reductions
+    // so get_fa_pipeline_state() passes SubGroupSize == 0 to flash_attn.comp.
+    // IMPORTANT: keep result.subgroup_size at the real hardware subgroup size here;
+    // it has already been used to compute workgroup_size and d_split safely.
     if (device->vendor_id == VK_VENDOR_ID_AMD &&
         device->architecture == AMD_GCN) {
         result.row_split = 1;
         result.disable_subgroups = true;
-        // flash_attn.comp treats SubGroupSize == 0 as "shared-memory reductions only".
-        // Workgroup size has already been selected above, so this does not collapse it.
-        result.subgroup_size = 0;
         result.limit_occupancy_shmem = 0;
     }
 '@
